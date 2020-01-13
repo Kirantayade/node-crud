@@ -21,7 +21,7 @@ router.get("/:id", async function(req,res,next){
       console.log('before query....');
       console.log(db);
       console.log(`QUERY RESULT1:${req.params.id}`);
-        const result= await db.query("SELECT * FROM fishes where id=$1",[req.params.id], function(error, result) {
+        const result= await db.query("SELECT * FROM students where id=$1",[req.params.id], function(error, result) {
             console.log(`QUERY RESULT:${result.rows}`);
            
             return res.json(result.rows);
@@ -41,7 +41,7 @@ router.get("/:id", async function(req,res,next){
         //console.log(req.body.name);
         //console.log(req.body.schoolname);
       const result = await db.query(
-        "INSERT INTO fishes (id,name,schoolname) VALUES ($1,$2,$3) RETURNING *",
+        "INSERT INTO students (id,name,schoolname) VALUES ($1,$2,$3) RETURNING *",
         [req.body.id,req.body.name, req.body.schoolname]
       );
       return res.json(result.rows[0]);
@@ -54,7 +54,7 @@ router.get("/:id", async function(req,res,next){
   router.put("/:id", async function(req, res, next) {
     try {
       const result = await db.query(
-        "UPDATE fishes SET name=$1, schoolname=$2 WHERE id=$3 RETURNING *",
+        "UPDATE students SET name=$1, schoolname=$2 WHERE id=$3 RETURNING *",
         [req.body.name, req.body.schoolname, req.params.id]
       );
       return res.json(result.rows[0]);
@@ -65,7 +65,7 @@ router.get("/:id", async function(req,res,next){
 
   router.delete("/:id", async function(req, res, next) {
     try {
-      const result = await db.query("DELETE FROM fishes WHERE id=$1", [
+      const result = await db.query("DELETE FROM students WHERE id=$1", [
         req.params.id
       ]);
       return res.json({ message: "Deleted" });
