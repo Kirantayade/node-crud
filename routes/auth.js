@@ -3,12 +3,15 @@ const router = express.Router();
 const db = require('../database/db');
 const joi = require('Joi');
 const bcrypt = require('bcrypt');
+const authorize =require("../middleware/authToken");
 const jwt = require('jsonwebtoken');
 const config = require('config');  
 
 router.post('/',function(req,res,next){
     console.log(bcrypt);
     try{
+    console.log(req);
+        
     const{error}=validate(req.body);
     if(error)return res.status(400).send(error.details[0].message);
 
@@ -20,7 +23,7 @@ router.post('/',function(req,res,next){
     const validPassword = bcrypt.compareSync(req.body.password,result.rows[0].password);
     if(!validPassword) return res.status(400).send(' password not valid');   
     
-    const token =jwt.sign({user_id:result.rows[0].user_id,username:result.rows[0].username},"secretkey");
+    const token =jwt.sign({user_id:result.rows[0].user_id,username:result.rows[0].username},'secretkey');
     
     res.send(token);
     
@@ -30,6 +33,20 @@ router.post('/',function(req,res,next){
     catch(err){
         return next(err)}
     });
+
+
+    router.delete("/:id",authorize, async function(req, res, next) {
+        try {
+          const result = await db.query("DELETE FROM users WHERE user_id=$1", [
+            req.params.id
+          ]);
+          return res.json({ message: "Deleted" });
+        } catch (err) {
+          return next(err);
+        }
+      });
+    
+    
 
 function validate(req){
     const schema = {

@@ -86,7 +86,7 @@ router.get("/:id", async function(req,res,next){
     }
   });
   
-  router.delete("/:id",authorize(), async function(req, res, next) {
+  router.delete("/:id",authorize, async function(req, res, next) {
     try {
       const result = await db.query("DELETE FROM users WHERE email=$1", [
         req.params.email
