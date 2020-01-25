@@ -8,43 +8,39 @@ const jwt = require('jsonwebtoken');
 const config = require('config');  
 
 router.post('/',function(req,res,next){
-    console.log(bcrypt);
+    
     try{
-    console.log(req);
-        
-    const{error}=validate(req.body);
-    if(error)return res.status(400).send(error.details[0].message);
-
-    console.log("email"+req.body.email);
-    const user=db.query("SELECT * FROM users where email=$1",[req.body.email], function(error, result) {
-    console.log(result.rows); 
+       const{error}=validate(req.body);
+       if(error)return res.status(400).send(error.details[0].message);
+       
+       const user=db.query("SELECT * FROM users where email=$1",[req.body.email], function(error, result) {
+       const validPassword = bcrypt.compareSync(req.body.password,result.rows[0].password);
+       
+       if(!validPassword) return res.status(400).send(' password not valid');   
+       const token =jwt.sign({user_id:result.rows[0].user_id,username:result.rows[0].username,isadmin:result.rows[0].isadmin},'secretkey');
     
-        
-    const validPassword = bcrypt.compareSync(req.body.password,result.rows[0].password);
-    if(!validPassword) return res.status(400).send(' password not valid');   
-    
-    const token =jwt.sign({user_id:result.rows[0].user_id,username:result.rows[0].username},'secretkey');
-    
-    res.send(token);
-    
-    //res.send(true);
-});
-}
-    catch(err){
-        return next(err)}
-    });
-
-
-    router.delete("/:id",authorize, async function(req, res, next) {
-        try {
-          const result = await db.query("DELETE FROM users WHERE user_id=$1", [
-            req.params.id
-          ]);
-          return res.json({ message: "Deleted" });
-        } catch (err) {
-          return next(err);
-        }
+       res.send(token);
+       //res.send(true);
       });
+    }
+    catch(err){
+        return next(err);
+    }
+});
+
+
+router.delete("/:id",authorize, async function(req, res, next) {
+      try {
+            if (req.isadmin==true){
+               const result = await db.query("DELETE FROM users WHERE user_id=$1", 
+               [req.params.id]);
+               return res.json({ message: "Deleted" });}
+            else(res.send("User not a admin"));
+          } 
+      catch(err){
+          return next(err);
+      }
+ });
     
     
 
